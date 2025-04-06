@@ -6,6 +6,7 @@ import rtc  # type: ignore
 import time  # type: ignore
 import board  # type: ignore
 import atexit  # type: ignore
+import keypad  # type: ignore
 import neopixel  # type: ignore
 import digitalio  # type: ignore
 from audiocore import WaveFile  # type: ignore
@@ -16,10 +17,49 @@ from tm1637_display import TM1637Display  # type: ignore
 display = TM1637Display(board.GP0, board.GP1, length=4)
 lights = neopixel.NeoPixel(board.GP3, 12)
 lights.fill((0, 0, 0))
+event = keypad.Event()  # reuseable
 wv = WaveFile(open("orig.wav", "rb"))
 rtc.RTC().datetime = time.struct_time((2025, 3, 31, 18, 6, 23, 0, 90, 1))
 
 ALARM_TIME = (17, 34)  # 5:40 pm
+DESCRIPTIONS = [
+    "year (eg 2025)",
+    "month (1-12)",
+    "month day (1-31)",
+    "hour (0-23)",
+    "minute (0-59)",
+    "second (0-59)",
+    "week day (0-6) (monday is 0)",
+    "year day (0-366)",
+    "is dst (0-1)",
+]
+
+
+def scroll_text(text):
+    """
+    Scroll text on display.
+
+    If text was "abcdef", it would display:
+    1. abcd
+    2. bcde
+    3. cdef
+    """
+    if len(text) < 4:
+        display.print(text)
+        time.sleep(0.5)
+        return
+    for i in range(len(text) - 3):
+        display.print(text[i : i + 4])
+        time.sleep(0.5)
+
+
+def input_num(desciption):
+    scroll_text(desciption)
+    pass  # TODO
+
+
+def set_time():
+    pass  # TODO
 
 
 def play():
@@ -88,9 +128,6 @@ def cleanup():
     display.print("")
     display.deinit()
 
-
-display.print(f"{time.localtime().tm_hour%12}.{time.localtime().tm_min:02d}")
-sunrise()
 
 while True:
     display.print(f"{time.localtime().tm_hour%12}.{time.localtime().tm_min:02d}")
