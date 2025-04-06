@@ -20,6 +20,43 @@ wv = WaveFile(open("orig.wav", "rb"))
 rtc.RTC().datetime = time.struct_time((2025, 3, 31, 18, 6, 23, 0, 90, 1))
 
 ALARM_TIME = (17, 34)  # 5:40 pm
+DESCRIPTIONS = [
+    "year (eg 2025)",
+    "month (1-12)",
+    "month day (1-31)",
+    "hour (0-23)",
+    "minute (0-59)",
+    "second (0-59)",
+    "week day (0-6) (monday is 0)",
+    "year day (0-366)",
+    "is dst (0-1)"
+]
+
+
+def scroll_text(text):
+    """
+    Scroll text on display.
+
+    If text was "abcdef", it would display:
+    1. abcd
+    2. bcde
+    3. cdef
+    """
+    if len(text) < 4:
+        display.print(text)
+        time.sleep(0.5)
+        return
+    for i in range(len(text) - 3):
+        display.print(text[i : i + 4])
+        time.sleep(0.5)
+
+
+def input_num(desciption):
+    scroll_text(desciption)
+    pass  # TODO
+
+def set_time():
+    pass  # TODO
 
 
 def play():
@@ -89,8 +126,6 @@ def cleanup():
     display.deinit()
 
 
-display.print(f"{time.localtime().tm_hour%12}.{time.localtime().tm_min:02d}")
-sunrise()
 
 while True:
     display.print(f"{time.localtime().tm_hour%12}.{time.localtime().tm_min:02d}")
