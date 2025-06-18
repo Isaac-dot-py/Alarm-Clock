@@ -18,20 +18,21 @@ display = TM1637Display(board.GP0, board.GP1, length=4)
 lights = neopixel.NeoPixel(board.GP3, 12)
 lights.fill((0, 0, 0))
 event = keypad.Event()  # reuseable
+keys = keypad.Keys((board.GP4, board.GP5), value_when_pressed=True, pull=True)
 wv = WaveFile(open("orig.wav", "rb"))
 rtc.RTC().datetime = time.struct_time((2025, 3, 31, 18, 6, 23, 0, 90, 1))
 
-ALARM_TIME = (17, 34)  # 5:40 pm
+ALARM_TIME = (17, 34)  # hour, minute
 DESCRIPTIONS = [
-    "year (eg 2025)",
-    "month (1-12)",
-    "month day (1-31)",
-    "hour (0-23)",
-    "minute (0-59)",
-    "second (0-59)",
-    "week day (0-6) (monday is 0)",
-    "year day (0-366)",
-    "is dst (0-1)",
+    ("year (eg 2025)", 2025, 2025, 2050),
+    ("month (1-12)", 1, 1, 12),
+    ("month day (1-31)", 1, 1, 31),
+    ("hour (0-23)", 0, 0, 23),
+    ("minute (0-59)", 0, 0, 59),
+    ("second (0-59)", 0, 0, 59),
+    ("week day (0-6) (monday is 0)", 0, 0, 6),
+    ("year day (0-366)", 0, 0, 366),
+    ("is dst (0-1)", 0, 0, 1),
 ]
 
 
@@ -49,13 +50,45 @@ def scroll_text(text):
         time.sleep(0.5)
         return
     for i in range(len(text) - 3):
+        if len(keys.events) > 0:
+            break
         display.print(text[i : i + 4])
         time.sleep(0.5)
 
 
-def input_num(desciption):
+def input_num(desciption, default, min_num, max_num):
+    """
+    get a number from the user
+
+    start by scrolling desciption
+    loop:
+        show the number
+        wait for user to push a button (MODE changes the number, ENTER exits the loop)
+        if user doesn't push a button within 3 seconds, scroll desciption
+    """
     scroll_text(desciption)
-    pass  # TODO
+    num = default
+    scroll_again_timeout = time.monotonic() + 3
+    increment_again_timeout = time.monotonic() + 0.1
+    pressed = False
+    while True:
+        display.print(num)
+        if keys.events.get_into(event):
+            if event.pressed and event.key_number == 1:
+                return num
+            if event.pressed and event.key_number == 0:
+                num += 1
+                pressed = True
+                increment_again_timeout = time.monotonic() + 0.1
+            if event.released and event.key_number == 0:
+                pressed = False
+        if pressed:
+            scroll_again_timeout = time.monotonic() + 3
+            if time.monotonic() > increment_again_timeout:
+                num += 1
+                increment_again_timeout = time.monotonic() + 0.1
+        if time.monotonic() > scroll_again_timeout:
+            scroll_text(desciption)
 
 
 def set_time():
@@ -128,7 +161,7 @@ def cleanup():
     display.print("")
     display.deinit()
 
-
+print(input_num(*DESCRIPTIONS[7]))
 while True:
     display.print(f"{time.localtime().tm_hour%12}.{time.localtime().tm_min:02d}")
     if (
