@@ -25,8 +25,8 @@ rtc.RTC().datetime = time.struct_time((2025, 3, 31, 18, 6, 23, 0, 90, 1))
 ALARM_TIME = (17, 34)  # hour, minute
 DESCRIPTIONS = [
     ("year (eg 2025)", 2025, 2025, 2050),
-    ("month (1-12)", 1, 1, 12),
-    ("month day (1-31)", 1, 1, 31),
+    ("nonth (1-12)", 1, 1, 12),
+    ("nonth day (1-31)", 1, 1, 31),
     ("hour (0-23)", 0, 0, 23),
     ("minute (0-59)", 0, 0, 59),
     ("second (0-59)", 0, 0, 59),
@@ -77,7 +77,10 @@ def input_num(desciption, default, min_num, max_num):
             if event.pressed and event.key_number == 1:
                 return num
             if event.pressed and event.key_number == 0:
-                num += 1
+                if num == max_num:
+                    num = min_num
+                else:
+                    num += 1
                 pressed = True
                 increment_again_timeout = time.monotonic() + 0.1
             if event.released and event.key_number == 0:
@@ -85,7 +88,10 @@ def input_num(desciption, default, min_num, max_num):
         if pressed:
             scroll_again_timeout = time.monotonic() + 3
             if time.monotonic() > increment_again_timeout:
-                num += 1
+                if num == max_num:
+                    num = min_num
+                else:
+                    num += 1
                 increment_again_timeout = time.monotonic() + 0.1
         if time.monotonic() > scroll_again_timeout:
             scroll_text(desciption)
@@ -161,7 +167,6 @@ def cleanup():
     display.print("")
     display.deinit()
 
-print(input_num(*DESCRIPTIONS[7]))
 while True:
     display.print(f"{time.localtime().tm_hour%12}.{time.localtime().tm_min:02d}")
     if (
