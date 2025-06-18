@@ -24,13 +24,13 @@ rtc.RTC().datetime = time.struct_time((2025, 3, 31, 18, 6, 23, 0, 90, 1))
 
 ALARM_TIME = (17, 34)  # hour, minute
 DESCRIPTIONS = [
-    ("year (eg 2025)", 2025, 2025, 2050),
+    ("year (eg 2025)", 2024, 2024, 2050),
     ("nonth (1-12)", 1, 1, 12),
     ("nonth day (1-31)", 1, 1, 31),
     ("hour (0-23)", 0, 0, 23),
-    ("minute (0-59)", 0, 0, 59),
+    ("ninute (0-59)", 0, 0, 59),
     ("second (0-59)", 0, 0, 59),
-    ("week day (0-6) (monday is 0)", 0, 0, 6),
+    ("veec day (0-6) (nonday is 0)", 0, 0, 6),
     ("year day (0-366)", 0, 0, 366),
     ("is dst (0-1)", 0, 0, 1),
 ]
@@ -98,8 +98,7 @@ def input_num(desciption, default, min_num, max_num):
 
 
 def set_time():
-    pass  # TODO
-
+    rtc.RTC().datetime = time.struct_time([input_num(*d) for d in DESCRIPTIONS])
 
 def play():
     audio = PWMAudioOut(board.GP2)
